@@ -402,8 +402,10 @@ export default function Home() {
       </section>
 
       {/* ---------------- FOOTER ---------------- */}
-      <footer className="bg-[#050e1c] py-4 border-t border-slate-800">
-        <div className="container mx-auto px-6 flex flex-row justify-between items-center">
+      <footer className="bg-[#050e1c] py-6 md:py-4 border-t border-slate-800">
+        <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+          
+          {/* Logo on the left */}
           <div className="hover:scale-105 transition-transform duration-300">
             <a href="#home" className="inline-block bg-white px-2 py-1 rounded-lg shadow-sm">
               <Image
@@ -415,9 +417,14 @@ export default function Home() {
               />
             </a>
           </div>
-          <div>
-            <p className="text-xs md:text-sm text-slate-400 font-medium tracking-wide">&copy; {new Date().getFullYear()} MAMARI Foreign Employment Agency. All Rights Reserved.</p>
+          
+          {/* Copyright text on the right (stacked on mobile, right-aligned on PC) */}
+          <div className="text-center md:text-right w-full md:w-auto">
+            <p className="text-xs md:text-sm text-slate-400 font-medium tracking-wide leading-relaxed pr-0 md:pr-4">
+              &copy; 2026 MAMARI Foreign Employment Agency. <br className="block md:hidden" /> All Rights Reserved.
+            </p>
           </div>
+
         </div>
       </footer>
 
