@@ -2,12 +2,18 @@
 
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FaBars, FaTimes, FaWhatsapp, FaArrowUp } from 'react-icons/fa';
 
 export default function ClientComponent() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+
+  // Slider Drag & Auto-scroll Variables
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const isDown = useRef(false);
+  const startX = useRef(0);
+  const scrollL = useRef(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -17,14 +23,65 @@ export default function ClientComponent() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Continuous Auto-Scroll Logic
+  useEffect(() => {
+    const slider = scrollRef.current;
+    if (!slider) return;
+
+    let animationId: number;
+    const playScroll = () => {
+      // Pause auto-scroll ONLY while the user is actively dragging
+      if (!isDown.current && slider) {
+        slider.scrollLeft += 1; // Speed of the slider
+        
+        // Seamless infinite loop reset
+        if (slider.scrollLeft >= slider.scrollWidth / 2) {
+          slider.scrollLeft = 0;
+        }
+      }
+      animationId = requestAnimationFrame(playScroll);
+    };
+    animationId = requestAnimationFrame(playScroll);
+
+    return () => cancelAnimationFrame(animationId);
+  }, []);
+
+  // Mouse Drag Handlers for Desktop
+  const handleMouseDown = (e: React.MouseEvent) => {
+    isDown.current = true;
+    if (scrollRef.current) {
+      startX.current = e.pageX - scrollRef.current.offsetLeft;
+      scrollL.current = scrollRef.current.scrollLeft;
+    }
+  };
+  const handleMouseLeave = () => { isDown.current = false; };
+  const handleMouseUp = () => { isDown.current = false; };
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDown.current || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX.current) * 2; // Scroll fast multiplier
+    scrollRef.current.scrollLeft = scrollL.current - walk;
+  };
+
+  // Touch Handlers for Mobile Swipe
+  const handleTouchStart = () => { isDown.current = true; };
+  const handleTouchEnd = () => { isDown.current = false; };
+
   // Smooth scroll handler for buttons
   const scrollToContact = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     const contactSection = document.getElementById('contact');
     if (contactSection) {
       contactSection.scrollIntoView({ behavior: 'smooth' });
-      setIsMobileMenuOpen(false); // Mobile menu ekath close wena eka hodai click kalama
+      setIsMobileMenuOpen(false); 
     }
+  };
+
+  // Smooth scroll to top for Logos
+  const scrollToTop = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const fadeInUp: any = {
@@ -50,14 +107,20 @@ export default function ClientComponent() {
 
       {/* ---------------- HEADER ---------------- */}
       <header className="sticky top-0 z-50 shadow-lg flex h-16 md:h-20 bg-[#0d2344] px-4 md:px-8">
-        <div className="flex items-center justify-start">
-          <a href="#home" className="flex items-center bg-white px-3 py-1 rounded shadow-sm hover:scale-105 transition-transform duration-300">
+        
+        {/* Hanging Logo Container */}
+        <div className="relative w-28 md:w-44 h-full flex-shrink-0">
+          <a 
+            href="#home" 
+            onClick={scrollToTop} 
+            className="absolute top-0 left-0 w-full bg-white px-2 pt-1 pb-4 md:px-4 md:pt-2 md:pb-6 rounded-b-2xl shadow-xl flex items-center justify-center hover:scale-105 transition-transform duration-300 cursor-pointer"
+          >
             <Image
               src="/mamarilogo.png"
               alt="Mamari Logo"
-              width={140}
-              height={50}
-              className="w-20 md:w-[140px] h-auto object-contain"
+              width={150}
+              height={70}
+              className="w-full h-auto object-contain"
               priority
             />
           </a>
@@ -65,7 +128,7 @@ export default function ClientComponent() {
 
         <div className="flex-1 flex justify-end items-center">
           <nav className="space-x-6 md:space-x-8 hidden lg:flex font-semibold text-sm text-white">
-            <a href="#home" className="hover:text-yellow-500 transition duration-300">Home</a>
+            <a href="#home" onClick={scrollToTop} className="hover:text-yellow-500 transition duration-300 cursor-pointer">Home</a>
             <a href="#introduction" className="hover:text-yellow-500 transition duration-300">Introduction</a>
             <a href="#about" className="hover:text-yellow-500 transition duration-300">About Us</a>
             <a href="#job-seekers" className="hover:text-yellow-500 transition duration-300">Job Opportunities</a>
@@ -109,7 +172,7 @@ export default function ClientComponent() {
                 <FaTimes />
               </button>
               <nav className="flex flex-col space-y-6 font-semibold text-lg text-white">
-                <a href="#home" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-yellow-500 transition duration-300">Home</a>
+                <a href="#home" onClick={(e) => { scrollToTop(e); setIsMobileMenuOpen(false); }} className="hover:text-yellow-500 transition duration-300">Home</a>
                 <a href="#introduction" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-yellow-500 transition duration-300">Introduction</a>
                 <a href="#about" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-yellow-500 transition duration-300">About Us</a>
                 <a href="#job-seekers" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-yellow-500 transition duration-300">Job Opportunities</a>
@@ -288,20 +351,31 @@ export default function ClientComponent() {
           </p>
         </motion.div>
 
-        {/* CSS Auto-Sliding Image Marquee */}
-        <div className="relative w-full py-10 bg-[#0a1b35] border-y border-white/10 flex shadow-2xl">
+        {/* JS Auto-Sliding & Draggable Image Marquee */}
+        <div className="relative w-full py-10 bg-[#0a1b35] border-y border-white/10 shadow-2xl">
           <div className="absolute top-0 left-0 w-16 md:w-48 h-full bg-gradient-to-r from-[#0d2344] to-transparent z-10 pointer-events-none"></div>
           <div className="absolute top-0 right-0 w-16 md:w-48 h-full bg-gradient-to-l from-[#0d2344] to-transparent z-10 pointer-events-none"></div>
 
-          <div className="flex animate-marquee whitespace-nowrap items-center">
-            {[1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6].map((item, idx) => (
-              <div key={idx} className="w-[280px] h-[180px] md:w-[380px] md:h-[240px] bg-[#081529] mx-4 rounded-xl flex-shrink-0 flex items-center justify-center border border-white/10 relative overflow-hidden group shadow-lg">
+          <div 
+            ref={scrollRef}
+            className="flex w-full overflow-x-auto hide-scrollbar cursor-grab active:cursor-grabbing items-center"
+            onMouseDown={handleMouseDown}
+            onMouseLeave={handleMouseLeave}
+            onMouseUp={handleMouseUp}
+            onMouseMove={handleMouseMove}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            {/* Duplicated array for seamless infinite scroll */}
+            {[1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6].map((item, idx) => (
+              <div key={idx} className="w-[280px] h-[180px] md:w-[380px] md:h-[240px] bg-[#081529] mx-4 rounded-xl flex-shrink-0 flex items-center justify-center border border-white/10 relative overflow-hidden group shadow-lg pointer-events-none">
                 <Image
                   src={`/const-${item}.jpg`}
                   alt={`Construction Job ${item}`}
                   fill
                   sizes="(max-width: 768px) 280px, 380px"
                   quality={80}
+                  draggable={false}
                   className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 ease-out"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0d2344]/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -324,16 +398,12 @@ export default function ClientComponent() {
 
         <style dangerouslySetInnerHTML={{
           __html: `
-          @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+          .hide-scrollbar::-webkit-scrollbar {
+            display: none;
           }
-          .animate-marquee {
-            animation: marquee 40s linear infinite;
-            width: max-content;
-          }
-          .animate-marquee:hover {
-            animation-play-state: paused;
+          .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
           }
         `}} />
       </section>
@@ -417,7 +487,7 @@ export default function ClientComponent() {
         <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
           
           <div className="hover:scale-105 transition-transform duration-300">
-            <a href="#home" className="inline-block bg-white px-2 py-1 rounded-lg shadow-sm">
+            <a href="#home" onClick={scrollToTop} className="inline-block bg-white px-2 py-1 rounded-lg shadow-sm cursor-pointer">
               <Image
                 src="/mamarilogo.png"
                 alt="Mamari Logo"
@@ -430,7 +500,7 @@ export default function ClientComponent() {
           
           <div className="text-center md:text-right w-full md:w-auto">
             <p className="text-xs md:text-sm text-slate-400 font-medium tracking-wide leading-relaxed pr-0 md:pr-4">
-              &copy; 2026 MAMARI Foreign Employment Agency. <br className="block md:hidden" /> All Rights Reserved.
+              &copy; {new Date().getFullYear()} MAMARI Foreign Employment Agency. <br className="block md:hidden" /> All Rights Reserved.
             </p>
           </div>
 
