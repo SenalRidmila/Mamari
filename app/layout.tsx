@@ -15,9 +15,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Mamari Foreign Employment Agency | Sri Lanka to Global Jobs",
-  description: "Mamari Foreign Employment Agency provides highly skilled and semi-skilled Sri Lankan workers to international employers, primarily in Israel. Trusted manpower recruitment in Sri Lanka.",
-  keywords: "Foreign employment agency Sri Lanka, jobs in Israel for Sri Lankans, overseas recruitment Sri Lanka, Mamari foreign employment, construction jobs Israel",
+  title: "MAMARI Foreign Employment Agency | Sri Lanka Manpower to Global Jobs",
+  description: "Mamari Foreign Employment Agency is a top-rated manpower recruitment agency in Sri Lanka, providing highly skilled and semi-skilled Sri Lankan workers for international jobs in Israel, Europe, and the Middle East.",
+  keywords: "Foreign employment agency Sri Lanka, Sri Lanka manpower agency, jobs in Israel for Sri Lankans, overseas recruitment Sri Lanka, Mamari foreign employment, construction jobs Israel, Elpitiya employment agency, migrate from Sri Lanka",
+  openGraph: {
+    title: "MAMARI Foreign Employment Agency",
+    description: "Your Gateway to Global Careers. Trusted Sri Lankan manpower recruitment agency.",
+    url: "https://mamariforeign.lk",
+    siteName: "Mamari Foreign Employment",
+    locale: "en_US",
+    type: "website",
+  }
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
