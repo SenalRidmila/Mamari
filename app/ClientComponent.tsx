@@ -68,20 +68,21 @@ export default function ClientComponent() {
   const handleTouchStart = () => { isDown.current = true; };
   const handleTouchEnd = () => { isDown.current = false; };
 
-  // Smooth scroll handler for buttons
-  const scrollToContact = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  // Generic Smooth Scroll Handler for all menu links (Prevents URL change)
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
     e.preventDefault();
-    const contactSection = document.getElementById('contact');
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: 'smooth' });
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
       setIsMobileMenuOpen(false); 
     }
   };
 
-  // Smooth scroll to top for Logos
+  // Smooth scroll to top for Logos & Home links (Prevents URL change)
   const scrollToTop = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    setIsMobileMenuOpen(false);
   };
 
   const fadeInUp: any = {
@@ -129,10 +130,10 @@ export default function ClientComponent() {
         <div className="flex-1 flex justify-end items-center">
           <nav className="space-x-6 md:space-x-8 hidden lg:flex font-semibold text-sm text-white">
             <a href="#home" onClick={scrollToTop} className="hover:text-yellow-500 transition duration-300 cursor-pointer">Home</a>
-            <a href="#introduction" className="hover:text-yellow-500 transition duration-300">Introduction</a>
-            <a href="#about" className="hover:text-yellow-500 transition duration-300">About Us</a>
-            <a href="#job-seekers" className="hover:text-yellow-500 transition duration-300">Job Opportunities</a>
-            <a href="#contact" onClick={scrollToContact} className="bg-yellow-500 text-[#0d2344] px-5 py-2 rounded font-bold hover:bg-yellow-400 transition duration-300 hover:shadow-[0_0_15px_rgba(234,179,8,0.5)] cursor-pointer">Contact Us</a>
+            <a href="#introduction" onClick={(e) => scrollToSection(e, 'introduction')} className="hover:text-yellow-500 transition duration-300 cursor-pointer">Introduction</a>
+            <a href="#about" onClick={(e) => scrollToSection(e, 'about')} className="hover:text-yellow-500 transition duration-300 cursor-pointer">About Us</a>
+            <a href="#job-seekers" onClick={(e) => scrollToSection(e, 'job-seekers')} className="hover:text-yellow-500 transition duration-300 cursor-pointer">Job Opportunities</a>
+            <a href="#contact" onClick={(e) => scrollToSection(e, 'contact')} className="bg-yellow-500 text-[#0d2344] px-5 py-2 rounded font-bold hover:bg-yellow-400 transition duration-300 hover:shadow-[0_0_15px_rgba(234,179,8,0.5)] cursor-pointer">Contact Us</a>
           </nav>
 
           {/* Mobile Menu Button */}
@@ -172,11 +173,11 @@ export default function ClientComponent() {
                 <FaTimes />
               </button>
               <nav className="flex flex-col space-y-6 font-semibold text-lg text-white">
-                <a href="#home" onClick={(e) => { scrollToTop(e); setIsMobileMenuOpen(false); }} className="hover:text-yellow-500 transition duration-300">Home</a>
-                <a href="#introduction" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-yellow-500 transition duration-300">Introduction</a>
-                <a href="#about" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-yellow-500 transition duration-300">About Us</a>
-                <a href="#job-seekers" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-yellow-500 transition duration-300">Job Opportunities</a>
-                <a href="#contact" onClick={scrollToContact} className="bg-yellow-500 text-[#0d2344] px-5 py-3 rounded text-center font-bold hover:bg-yellow-400 transition duration-300 shadow-lg mt-4 cursor-pointer">Contact Us</a>
+                <a href="#home" onClick={scrollToTop} className="hover:text-yellow-500 transition duration-300">Home</a>
+                <a href="#introduction" onClick={(e) => scrollToSection(e, 'introduction')} className="hover:text-yellow-500 transition duration-300">Introduction</a>
+                <a href="#about" onClick={(e) => scrollToSection(e, 'about')} className="hover:text-yellow-500 transition duration-300">About Us</a>
+                <a href="#job-seekers" onClick={(e) => scrollToSection(e, 'job-seekers')} className="hover:text-yellow-500 transition duration-300">Job Opportunities</a>
+                <a href="#contact" onClick={(e) => scrollToSection(e, 'contact')} className="bg-yellow-500 text-[#0d2344] px-5 py-3 rounded text-center font-bold hover:bg-yellow-400 transition duration-300 shadow-lg mt-4 cursor-pointer">Contact Us</a>
               </nav>
             </motion.div>
           </>
@@ -226,7 +227,7 @@ export default function ClientComponent() {
           <motion.a
             variants={fadeInUp}
             href="#contact"
-            onClick={scrollToContact}
+            onClick={(e) => scrollToSection(e, 'contact')}
             className="inline-block bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-300 hover:to-yellow-500 text-[#0d2344] font-extrabold text-lg py-4 px-12 rounded-full shadow-2xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-110 cursor-pointer"
           >
             FIND A JOB
@@ -391,7 +392,7 @@ export default function ClientComponent() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="text-center mt-16 relative z-10"
         >
-          <a href="#contact" onClick={scrollToContact} className="inline-block bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-300 hover:to-yellow-500 text-[#0d2344] font-extrabold text-xl py-4 px-12 rounded-full shadow-[0_0_20px_rgba(234,179,8,0.3)] transition-transform hover:-translate-y-2 hover:scale-105 border-2 border-yellow-300 cursor-pointer">
+          <a href="#contact" onClick={(e) => scrollToSection(e, 'contact')} className="inline-block bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-300 hover:to-yellow-500 text-[#0d2344] font-extrabold text-xl py-4 px-12 rounded-full shadow-[0_0_20px_rgba(234,179,8,0.3)] transition-transform hover:-translate-y-2 hover:scale-105 border-2 border-yellow-300 cursor-pointer">
             APPLY
           </a>
         </motion.div>
