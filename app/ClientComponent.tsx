@@ -131,13 +131,11 @@ export default function ClientComponent() {
   const handleAcceptCookies = () => {
     localStorage.setItem('cookieConsent', 'granted');
     setShowCookieBanner(false);
-    // You can initialize Analytics or tracking scripts here
   };
 
   const handleDeclineCookies = () => {
     localStorage.setItem('cookieConsent', 'denied');
     setShowCookieBanner(false);
-    // Ensure no tracking cookies are placed here
   };
 
   // --- Form Handlers ---
@@ -668,7 +666,7 @@ export default function ClientComponent() {
         )}
       </AnimatePresence>
 
-      {/* --- COOKIE CONSENT BANNER --- */}
+      {/* --- COOKIE CONSENT BANNER (Updated to match old UI) --- */}
       <AnimatePresence>
         {showCookieBanner && (
           <motion.div
@@ -676,15 +674,16 @@ export default function ClientComponent() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
             transition={{ type: "spring", bounce: 0.2, duration: 0.8 }}
-            className="fixed bottom-0 left-0 w-full bg-[#0d2344] text-white p-4 md:p-6 z-[100] shadow-[0_-10px_30px_rgba(0,0,0,0.4)] flex flex-col md:flex-row items-center justify-between gap-4 border-t-4 border-yellow-500"
+            className="fixed bottom-0 left-0 w-full bg-[#0b162c] text-white p-6 z-[100] shadow-[0_-10px_30px_rgba(0,0,0,0.6)] flex flex-col md:flex-row items-center justify-between gap-6 border-t-[3px] border-yellow-500"
           >
             <div className="text-sm md:text-base text-slate-300 flex-1 text-center md:text-left">
-              <p>We use cookies to improve your experience on our website. By continuing to browse, you agree to our use of cookies.</p>
+              <h3 className="text-yellow-500 font-bold text-lg mb-2">Cache & Cookies Memory</h3>
+              <p>We use cache memory and cookies to optimize your experience, improve page load speeds, and analyze site traffic. Do you allow us to store cache memory?</p>
             </div>
             <div className="flex gap-4 flex-shrink-0">
               <button 
                 onClick={handleDeclineCookies}
-                className="px-6 py-2 border border-slate-500 text-slate-300 font-semibold rounded hover:bg-slate-700 transition duration-300"
+                className="px-6 py-2 border border-slate-500 text-white font-semibold rounded hover:bg-slate-800 transition duration-300"
               >
                 Deny
               </button>
@@ -692,7 +691,7 @@ export default function ClientComponent() {
                 onClick={handleAcceptCookies}
                 className="px-6 py-2 bg-yellow-500 text-[#0d2344] font-bold rounded hover:bg-yellow-400 transition duration-300 shadow-[0_0_10px_rgba(234,179,8,0.3)] hover:shadow-[0_0_15px_rgba(234,179,8,0.5)]"
               >
-                Allow
+                Allow Cache
               </button>
             </div>
           </motion.div>
