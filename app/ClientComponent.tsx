@@ -8,12 +8,15 @@ import { FaBars, FaTimes, FaWhatsapp, FaArrowUp } from 'react-icons/fa';
 export default function ClientComponent() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [activeSection, setActiveSection] = useState('home'); // Active Nav Link State
+  const [activeSection, setActiveSection] = useState('home'); 
 
   // --- Form State Variables ---
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<string | null>(null);
+
+  // --- Cookie Consent State ---
+  const [showCookieBanner, setShowCookieBanner] = useState(false);
 
   // Slider Drag & Auto-scroll Variables
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -21,12 +24,17 @@ export default function ClientComponent() {
   const startX = useRef(0);
   const scrollL = useRef(0);
 
+  // Initial Data & Scroll Listeners
   useEffect(() => {
+    // Check Cookie Consent on load
+    const consent = localStorage.getItem('cookieConsent');
+    if (!consent) {
+      setShowCookieBanner(true);
+    }
+
     const handleScroll = () => {
-      // Show/Hide Scroll to top button
       setShowScrollTop(window.scrollY > 300);
 
-      // Detect active section for Nav highlighting
       const sections = ['home', 'introduction', 'about', 'job-seekers', 'contact'];
       let currentSection = 'home';
       
@@ -34,7 +42,6 @@ export default function ClientComponent() {
         const element = document.getElementById(section);
         if (element) {
           const rect = element.getBoundingClientRect();
-          // If the section is near the top of the viewport
           if (rect.top <= 150) {
             currentSection = section;
           }
@@ -44,7 +51,7 @@ export default function ClientComponent() {
     };
 
     window.addEventListener("scroll", handleScroll);
-    handleScroll(); // Call once on mount to set initial state
+    handleScroll(); 
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -56,7 +63,7 @@ export default function ClientComponent() {
     let animationId: number;
     const playScroll = () => {
       if (!isDown.current && slider) {
-        slider.scrollLeft += 1; // Speed of the slider
+        slider.scrollLeft += 1; 
         
         if (slider.scrollLeft >= slider.scrollWidth / 2) {
           slider.scrollLeft = 0;
@@ -87,7 +94,6 @@ export default function ClientComponent() {
     scrollRef.current.scrollLeft = scrollL.current - walk;
   };
 
-  // Touch Handlers for Mobile Swipe
   const handleTouchStart = () => { isDown.current = true; };
   const handleTouchEnd = () => { isDown.current = false; };
 
@@ -95,7 +101,6 @@ export default function ClientComponent() {
   const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
     e.preventDefault();
     
-    // Home එකට scroll වෙනවා නම් කෙලින්ම උඩටම යන්න
     if (sectionId === 'home') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       setIsMobileMenuOpen(false);
@@ -104,7 +109,6 @@ export default function ClientComponent() {
 
     const section = document.getElementById(sectionId);
     if (section) {
-      // Sticky header එක නිසා content එක වැහෙන එක නවත්තන්න px 80 ක offset එකක් දෙනවා
       const headerOffset = 80; 
       const elementPosition = section.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.scrollY - headerOffset;
@@ -117,11 +121,23 @@ export default function ClientComponent() {
     }
   };
 
-  // Smooth scroll to top for Logos & floating button
   const scrollToTop = (e: React.MouseEvent<HTMLAnchorElement> | React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setIsMobileMenuOpen(false);
+  };
+
+  // --- Cookie Handlers ---
+  const handleAcceptCookies = () => {
+    localStorage.setItem('cookieConsent', 'granted');
+    setShowCookieBanner(false);
+    // You can initialize Analytics or tracking scripts here
+  };
+
+  const handleDeclineCookies = () => {
+    localStorage.setItem('cookieConsent', 'denied');
+    setShowCookieBanner(false);
+    // Ensure no tracking cookies are placed here
   };
 
   // --- Form Handlers ---
@@ -183,7 +199,6 @@ export default function ClientComponent() {
       {/* ---------------- HEADER ---------------- */}
       <header className="sticky top-0 z-50 shadow-lg flex h-16 md:h-20 bg-[#0d2344] px-4 md:px-8">
         
-        {/* Hanging Logo Container */}
         <div className="relative w-28 md:w-44 h-full flex-shrink-0">
           <a 
             href="#home" 
@@ -210,7 +225,6 @@ export default function ClientComponent() {
             <a href="#contact" onClick={(e) => scrollToSection(e, 'contact')} className="bg-yellow-500 text-[#0d2344] px-5 py-2 rounded font-bold hover:bg-yellow-400 transition duration-300 hover:shadow-[0_0_15px_rgba(234,179,8,0.5)] cursor-pointer">Contact Us</a>
           </nav>
 
-          {/* Mobile Menu Button */}
           <button 
             className="lg:hidden text-white text-2xl focus:outline-none ml-4"
             onClick={() => setIsMobileMenuOpen(true)}
@@ -344,7 +358,6 @@ export default function ClientComponent() {
         <div className="container mx-auto px-6 max-w-6xl">
           <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
 
-            {/* About Us Content */}
             <motion.div
               initial="hidden"
               whileInView="visible"
@@ -363,7 +376,6 @@ export default function ClientComponent() {
               </div>
             </motion.div>
 
-            {/* Vision & Mission Content */}
             <motion.div
               initial="hidden"
               whileInView="visible"
@@ -426,7 +438,6 @@ export default function ClientComponent() {
           </p>
         </motion.div>
 
-        {/* JS Auto-Sliding & Draggable Image Marquee */}
         <div className="relative w-full py-10 bg-[#0a1b35] border-y border-white/10 shadow-2xl">
           <div className="absolute top-0 left-0 w-16 md:w-48 h-full bg-gradient-to-r from-[#0d2344] to-transparent z-10 pointer-events-none"></div>
           <div className="absolute top-0 right-0 w-16 md:w-48 h-full bg-gradient-to-l from-[#0d2344] to-transparent z-10 pointer-events-none"></div>
@@ -441,7 +452,6 @@ export default function ClientComponent() {
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
-            {/* Duplicated array for seamless infinite scroll */}
             {[1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6].map((item, idx) => (
               <div key={idx} className="w-[280px] h-[180px] md:w-[380px] md:h-[240px] bg-[#081529] mx-4 rounded-xl flex-shrink-0 flex items-center justify-center border border-white/10 relative overflow-hidden group shadow-lg pointer-events-none">
                 <Image
@@ -553,7 +563,6 @@ export default function ClientComponent() {
                   {isSubmitting ? 'SENDING MESSAGE...' : 'SUBMIT MESSAGE'}
                 </button>
 
-                {/* Success / Error Messages */}
                 {submitStatus === 'success' && (
                   <p className="text-green-400 font-semibold text-center mt-4 bg-green-900/40 py-2 rounded-lg border border-green-500/50">
                     Message Sent Successfully! We will contact you soon.
@@ -591,7 +600,6 @@ export default function ClientComponent() {
                   </a>
                 </div>
               </div>
-              {/* Updated Google Map */}
               <div className="flex-1 w-full bg-slate-300 rounded-2xl overflow-hidden shadow-inner min-h-[300px] border-4 border-white">
                 <iframe
                   src="https://maps.google.com/maps?q=6%C2%B016'28.8%22N+80%C2%B008'18.4%22E&t=&z=15&ie=UTF8&iwloc=&output=embed"
@@ -644,6 +652,7 @@ export default function ClientComponent() {
         <FaWhatsapp className="text-3xl" />
       </a>
 
+      {/* Scroll to Top Button */}
       <AnimatePresence>
         {showScrollTop && (
           <motion.button 
@@ -658,6 +667,38 @@ export default function ClientComponent() {
           </motion.button>
         )}
       </AnimatePresence>
+
+      {/* --- COOKIE CONSENT BANNER --- */}
+      <AnimatePresence>
+        {showCookieBanner && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ type: "spring", bounce: 0.2, duration: 0.8 }}
+            className="fixed bottom-0 left-0 w-full bg-[#0d2344] text-white p-4 md:p-6 z-[100] shadow-[0_-10px_30px_rgba(0,0,0,0.4)] flex flex-col md:flex-row items-center justify-between gap-4 border-t-4 border-yellow-500"
+          >
+            <div className="text-sm md:text-base text-slate-300 flex-1 text-center md:text-left">
+              <p>We use cookies to improve your experience on our website. By continuing to browse, you agree to our use of cookies.</p>
+            </div>
+            <div className="flex gap-4 flex-shrink-0">
+              <button 
+                onClick={handleDeclineCookies}
+                className="px-6 py-2 border border-slate-500 text-slate-300 font-semibold rounded hover:bg-slate-700 transition duration-300"
+              >
+                Deny
+              </button>
+              <button 
+                onClick={handleAcceptCookies}
+                className="px-6 py-2 bg-yellow-500 text-[#0d2344] font-bold rounded hover:bg-yellow-400 transition duration-300 shadow-[0_0_10px_rgba(234,179,8,0.3)] hover:shadow-[0_0_15px_rgba(234,179,8,0.5)]"
+              >
+                Allow
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
