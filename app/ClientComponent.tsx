@@ -8,6 +8,7 @@ import { FaBars, FaTimes, FaWhatsapp, FaArrowUp } from 'react-icons/fa';
 export default function ClientComponent() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [activeSection, setActiveSection] = useState('home'); // Active Nav Link State
 
   // --- Form State Variables ---
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' });
@@ -22,9 +23,28 @@ export default function ClientComponent() {
 
   useEffect(() => {
     const handleScroll = () => {
+      // Show/Hide Scroll to top button
       setShowScrollTop(window.scrollY > 300);
+
+      // Detect active section for Nav highlighting
+      const sections = ['home', 'introduction', 'about', 'job-seekers', 'contact'];
+      let currentSection = 'home';
+      
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          // If the section is near the top of the viewport
+          if (rect.top <= 150) {
+            currentSection = section;
+          }
+        }
+      }
+      setActiveSection(currentSection);
     };
+
     window.addEventListener("scroll", handleScroll);
+    handleScroll(); // Call once on mount to set initial state
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -71,18 +91,34 @@ export default function ClientComponent() {
   const handleTouchStart = () => { isDown.current = true; };
   const handleTouchEnd = () => { isDown.current = false; };
 
-  // Generic Smooth Scroll Handler for all menu links 
+  // --- Perfect Smooth Scroll Handler with Offset ---
   const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
     e.preventDefault();
+    
+    // Home එකට scroll වෙනවා නම් කෙලින්ම උඩටම යන්න
+    if (sectionId === 'home') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setIsMobileMenuOpen(false);
+      return;
+    }
+
     const section = document.getElementById(sectionId);
     if (section) {
-      section.scrollIntoView({ behavior: 'smooth' });
+      // Sticky header එක නිසා content එක වැහෙන එක නවත්තන්න px 80 ක offset එකක් දෙනවා
+      const headerOffset = 80; 
+      const elementPosition = section.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.scrollY - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
       setIsMobileMenuOpen(false); 
     }
   };
 
-  // Smooth scroll to top for Logos & Home links
-  const scrollToTop = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  // Smooth scroll to top for Logos & floating button
+  const scrollToTop = (e: React.MouseEvent<HTMLAnchorElement> | React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setIsMobileMenuOpen(false);
@@ -99,7 +135,6 @@ export default function ClientComponent() {
     setSubmitStatus(null);
 
     try {
-      // Backend API Route එකට දත්ත යැවීම
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: {
@@ -112,7 +147,7 @@ export default function ClientComponent() {
       
       if (response.ok && result.success) {
         setSubmitStatus('success');
-        setFormData({ name: '', email: '', phone: '', message: '' }); // Form එක clear කිරීම
+        setFormData({ name: '', email: '', phone: '', message: '' }); 
         setTimeout(() => setSubmitStatus(null), 5000); 
       } else {
         setSubmitStatus('error');
@@ -167,11 +202,11 @@ export default function ClientComponent() {
         </div>
 
         <div className="flex-1 flex justify-end items-center">
-          <nav className="space-x-6 md:space-x-8 hidden lg:flex font-semibold text-sm text-white">
-            <a href="#home" onClick={scrollToTop} className="hover:text-yellow-500 transition duration-300 cursor-pointer">Home</a>
-            <a href="#introduction" onClick={(e) => scrollToSection(e, 'introduction')} className="hover:text-yellow-500 transition duration-300 cursor-pointer">Introduction</a>
-            <a href="#about" onClick={(e) => scrollToSection(e, 'about')} className="hover:text-yellow-500 transition duration-300 cursor-pointer">About Us</a>
-            <a href="#job-seekers" onClick={(e) => scrollToSection(e, 'job-seekers')} className="hover:text-yellow-500 transition duration-300 cursor-pointer">Job Opportunities</a>
+          <nav className="space-x-6 md:space-x-8 hidden lg:flex font-semibold text-sm">
+            <a href="#home" onClick={(e) => scrollToSection(e, 'home')} className={`${activeSection === 'home' ? 'text-yellow-500' : 'text-white hover:text-yellow-500'} transition duration-300 cursor-pointer`}>Home</a>
+            <a href="#introduction" onClick={(e) => scrollToSection(e, 'introduction')} className={`${activeSection === 'introduction' ? 'text-yellow-500' : 'text-white hover:text-yellow-500'} transition duration-300 cursor-pointer`}>Introduction</a>
+            <a href="#about" onClick={(e) => scrollToSection(e, 'about')} className={`${activeSection === 'about' ? 'text-yellow-500' : 'text-white hover:text-yellow-500'} transition duration-300 cursor-pointer`}>About Us</a>
+            <a href="#job-seekers" onClick={(e) => scrollToSection(e, 'job-seekers')} className={`${activeSection === 'job-seekers' ? 'text-yellow-500' : 'text-white hover:text-yellow-500'} transition duration-300 cursor-pointer`}>Job Opportunities</a>
             <a href="#contact" onClick={(e) => scrollToSection(e, 'contact')} className="bg-yellow-500 text-[#0d2344] px-5 py-2 rounded font-bold hover:bg-yellow-400 transition duration-300 hover:shadow-[0_0_15px_rgba(234,179,8,0.5)] cursor-pointer">Contact Us</a>
           </nav>
 
@@ -211,11 +246,11 @@ export default function ClientComponent() {
               >
                 <FaTimes />
               </button>
-              <nav className="flex flex-col space-y-6 font-semibold text-lg text-white">
-                <a href="#home" onClick={scrollToTop} className="hover:text-yellow-500 transition duration-300">Home</a>
-                <a href="#introduction" onClick={(e) => scrollToSection(e, 'introduction')} className="hover:text-yellow-500 transition duration-300">Introduction</a>
-                <a href="#about" onClick={(e) => scrollToSection(e, 'about')} className="hover:text-yellow-500 transition duration-300">About Us</a>
-                <a href="#job-seekers" onClick={(e) => scrollToSection(e, 'job-seekers')} className="hover:text-yellow-500 transition duration-300">Job Opportunities</a>
+              <nav className="flex flex-col space-y-6 font-semibold text-lg">
+                <a href="#home" onClick={(e) => scrollToSection(e, 'home')} className={`${activeSection === 'home' ? 'text-yellow-500' : 'text-white hover:text-yellow-500'} transition duration-300`}>Home</a>
+                <a href="#introduction" onClick={(e) => scrollToSection(e, 'introduction')} className={`${activeSection === 'introduction' ? 'text-yellow-500' : 'text-white hover:text-yellow-500'} transition duration-300`}>Introduction</a>
+                <a href="#about" onClick={(e) => scrollToSection(e, 'about')} className={`${activeSection === 'about' ? 'text-yellow-500' : 'text-white hover:text-yellow-500'} transition duration-300`}>About Us</a>
+                <a href="#job-seekers" onClick={(e) => scrollToSection(e, 'job-seekers')} className={`${activeSection === 'job-seekers' ? 'text-yellow-500' : 'text-white hover:text-yellow-500'} transition duration-300`}>Job Opportunities</a>
                 <a href="#contact" onClick={(e) => scrollToSection(e, 'contact')} className="bg-yellow-500 text-[#0d2344] px-5 py-3 rounded text-center font-bold hover:bg-yellow-400 transition duration-300 shadow-lg mt-4 cursor-pointer">Contact Us</a>
               </nav>
             </motion.div>
@@ -578,7 +613,7 @@ export default function ClientComponent() {
         <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
           
           <div className="hover:scale-105 transition-transform duration-300">
-            <a href="#home" onClick={scrollToTop} className="inline-block bg-white px-2 py-1 rounded-lg shadow-sm cursor-pointer">
+            <a href="#home" onClick={(e) => scrollToTop(e as unknown as React.MouseEvent<HTMLAnchorElement>)} className="inline-block bg-white px-2 py-1 rounded-lg shadow-sm cursor-pointer">
               <Image
                 src="/mamarilogo.png"
                 alt="Mamari Logo"
@@ -615,7 +650,7 @@ export default function ClientComponent() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            onClick={(e) => scrollToTop(e)}
             aria-label="Scroll to top"
             className="fixed bottom-28 right-6 z-[90] bg-yellow-500 text-[#0d2344] p-3 rounded-full shadow-[0_4px_15px_rgba(234,179,8,0.4)] hover:bg-yellow-400 hover:scale-110 transition-all duration-300 flex items-center justify-center"
           >
