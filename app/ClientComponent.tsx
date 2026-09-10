@@ -9,6 +9,11 @@ export default function ClientComponent() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
+  // --- Form State Variables ---
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<string | null>(null);
+
   // Slider Drag & Auto-scroll Variables
   const scrollRef = useRef<HTMLDivElement>(null);
   const isDown = useRef(false);
@@ -30,11 +35,9 @@ export default function ClientComponent() {
 
     let animationId: number;
     const playScroll = () => {
-      // Pause auto-scroll ONLY while the user is actively dragging
       if (!isDown.current && slider) {
         slider.scrollLeft += 1; // Speed of the slider
         
-        // Seamless infinite loop reset
         if (slider.scrollLeft >= slider.scrollWidth / 2) {
           slider.scrollLeft = 0;
         }
@@ -60,7 +63,7 @@ export default function ClientComponent() {
     if (!isDown.current || !scrollRef.current) return;
     e.preventDefault();
     const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX.current) * 2; // Scroll fast multiplier
+    const walk = (x - startX.current) * 2; 
     scrollRef.current.scrollLeft = scrollL.current - walk;
   };
 
@@ -68,7 +71,7 @@ export default function ClientComponent() {
   const handleTouchStart = () => { isDown.current = true; };
   const handleTouchEnd = () => { isDown.current = false; };
 
-  // Generic Smooth Scroll Handler for all menu links (Prevents URL change)
+  // Generic Smooth Scroll Handler for all menu links 
   const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
     e.preventDefault();
     const section = document.getElementById(sectionId);
@@ -78,11 +81,47 @@ export default function ClientComponent() {
     }
   };
 
-  // Smooth scroll to top for Logos & Home links (Prevents URL change)
+  // Smooth scroll to top for Logos & Home links
   const scrollToTop = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setIsMobileMenuOpen(false);
+  };
+
+  // --- Form Handlers ---
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    try {
+      // Backend API Route එකට දත්ත යැවීම
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        setSubmitStatus('success');
+        setFormData({ name: '', email: '', phone: '', message: '' }); // Form එක clear කිරීම
+        setTimeout(() => setSubmitStatus(null), 5000); 
+      } else {
+        setSubmitStatus('error');
+      }
+    } catch (error) {
+      setSubmitStatus('error');
+    }
+    
+    setIsSubmitting(false);
   };
 
   const fadeInUp: any = {
@@ -424,23 +463,74 @@ export default function ClientComponent() {
             {/* Contact Form */}
             <div className="w-full lg:w-1/2 p-8 md:p-12 bg-gradient-to-br from-[#0d2344] to-[#122e5c] text-white">
               <h3 className="text-2xl md:text-3xl font-bold mb-8 text-yellow-500">Send us a message / Apply Now</h3>
-              <form className="space-y-6">
+              
+              <form className="space-y-6" onSubmit={handleFormSubmit}>
                 <div className="group">
-                  <input type="text" placeholder="Full Name" className="w-full p-4 rounded-xl bg-white/10 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 border border-white/20 transition-all group-hover:border-yellow-500/50" />
+                  <input 
+                    type="text" 
+                    name="name"
+                    required
+                    value={formData.name}
+                    onChange={handleFormChange}
+                    placeholder="Full Name" 
+                    className="w-full p-4 rounded-xl bg-white/10 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 border border-white/20 transition-all group-hover:border-yellow-500/50" 
+                  />
                 </div>
                 <div className="group">
-                  <input type="email" placeholder="Email Address" className="w-full p-4 rounded-xl bg-white/10 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 border border-white/20 transition-all group-hover:border-yellow-500/50" />
+                  <input 
+                    type="email" 
+                    name="email"
+                    required
+                    value={formData.email}
+                    onChange={handleFormChange}
+                    placeholder="Email Address" 
+                    className="w-full p-4 rounded-xl bg-white/10 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 border border-white/20 transition-all group-hover:border-yellow-500/50" 
+                  />
                 </div>
                 <div className="group">
-                  <input type="text" placeholder="Phone Number" className="w-full p-4 rounded-xl bg-white/10 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 border border-white/20 transition-all group-hover:border-yellow-500/50" />
+                  <input 
+                    type="text" 
+                    name="phone"
+                    required
+                    value={formData.phone}
+                    onChange={handleFormChange}
+                    placeholder="Phone Number" 
+                    className="w-full p-4 rounded-xl bg-white/10 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 border border-white/20 transition-all group-hover:border-yellow-500/50" 
+                  />
                 </div>
                 <div className="group">
-                  <textarea placeholder="Job Category / Message" rows={4} className="w-full p-4 rounded-xl bg-white/10 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 border border-white/20 transition-all group-hover:border-yellow-500/50 resize-none"></textarea>
+                  <textarea 
+                    name="message"
+                    required
+                    value={formData.message}
+                    onChange={handleFormChange}
+                    placeholder="Job Category / Message" 
+                    rows={4} 
+                    className="w-full p-4 rounded-xl bg-white/10 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 border border-white/20 transition-all group-hover:border-yellow-500/50 resize-none"
+                  ></textarea>
                 </div>
-                <button type="button" className="w-full bg-yellow-500 hover:bg-yellow-400 text-[#0d2344] font-extrabold text-lg py-4 rounded-xl transition-all duration-300 transform hover:-translate-y-1 shadow-[0_0_15px_rgba(234,179,8,0.4)] mt-4">
-                  SUBMIT MESSAGE
+                
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                  className={`w-full bg-yellow-500 hover:bg-yellow-400 text-[#0d2344] font-extrabold text-lg py-4 rounded-xl transition-all duration-300 transform shadow-[0_0_15px_rgba(234,179,8,0.4)] mt-4 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : 'hover:-translate-y-1'}`}
+                >
+                  {isSubmitting ? 'SENDING MESSAGE...' : 'SUBMIT MESSAGE'}
                 </button>
+
+                {/* Success / Error Messages */}
+                {submitStatus === 'success' && (
+                  <p className="text-green-400 font-semibold text-center mt-4 bg-green-900/40 py-2 rounded-lg border border-green-500/50">
+                    Message Sent Successfully! We will contact you soon.
+                  </p>
+                )}
+                {submitStatus === 'error' && (
+                  <p className="text-red-400 font-semibold text-center mt-4 bg-red-900/40 py-2 rounded-lg border border-red-500/50">
+                    Something went wrong. Please try again.
+                  </p>
+                )}
               </form>
+
             </div>
 
             {/* Contact Details & Map */}
